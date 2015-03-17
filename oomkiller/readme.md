@@ -26,22 +26,30 @@ gcc -o2 memoryeater.c -o memoryeater -pthread -std=c99
 for i in $(seq 1 2); do for j in $(seq 1 50); do (./memoryeater 10 1 100 &)  ; done ; sleep 10; done
 
 
-3) Run with 100 threads and allocate 10 GB of memory
-./memoryeater 10 100 10
+3) Run with 100 threads and allocate 100 GB of memory
+./memoryeater 10 100 100
 
 
 4) Fork Bomb + threads
-for i in $(seq 1 5); do for j in $(seq 1 10); do (./memoryeater 10 100 10 &)  ; done ; sleep 10; done
+for i in $(seq 1 5); do for j in $(seq 1 2); do (./memoryeater 10 100 10 &)  ; done ; sleep 10; done
 
 
+5) Heavy over commit
+
+./memoryeater 10 100 100
+
+or
+
+for i in $(seq 1 100); do for j in $(seq 1 5); do (./memoryeater 10 100 100 &)  ; done ; sleep 10; done
 
 #Results
 
 Kernel 3.11.0-12-generic
 1) OK
 2) OK
-3) CRASH
-4) DON'T EVEN THINK ABOUT IT
+3) HANG 1/20
+4) HANG 1/20
+5) HANG 1/5 
 
 
 Kernel 3.13.0-44-generic
@@ -49,7 +57,16 @@ Kernel 3.13.0-44-generic
 1) OK
 2) OK
 3) OK
-4) SLOW - But can recover
+4) OK
+5) HANG 1/5
+
+Kernel 3.14.4-031404-generic
+
+1) OK
+2) OK
+3) OK
+4) OK
+5) OK
 
 
 # Patch Details
