@@ -35,13 +35,24 @@ for i in $(seq 1 5); do for j in $(seq 1 2); do (./memoryeater 10 100 10 &)  ; d
 
 
 5) Duration test
-
 for i in $(seq 1 100); do for j in $(seq 1 5); do (./memoryeater 10 100 10 &)  ; done ; sleep 10; done
 
 
-6) Thread kill and stuff - Duration test
+6) Thread kill and stuff - Duration test.  Only 10 threads and 10 megs per alloc.
 
-for i in $(seq 1 100); do for j in $(seq 1 5); do (./memoryeater_and_kill 10 100 10 50 &)  ; done ; sleep 30; done
+for i in $(seq 1 100); do for j in $(seq 1 10); do (./memoryeater_and_kill 10 10 10 50 &)  ; done ; sleep 60; done
+
+
+7) Thread kill and stuff - Duration test.  Using 100 threads, saturate the memory bus.
+
+for i in $(seq 1 100); do for j in $(seq 1 2); do (./memoryeater_and_kill 10 100 10 50 &)  ; done ; sleep 60; done
+
+
+
+
+8) Other ideas
+cgroups
+overcommit
 
 
 
@@ -53,15 +64,8 @@ Kernel 3.11.0-12-generic
 3) HANG 1/20
 4) HANG 1/20
 5) HANG 1/5 
-
-
-Kernel 3.13.0-44-generic
-
-1) OK
-2) OK
-3) OK
-4) OK
-5) HANG 1/5
+6) OK  
+7) Hang 1/4
 
 Kernel 3.14.4-031404-generic
 
@@ -70,6 +74,15 @@ Kernel 3.14.4-031404-generic
 3) OK
 4) OK
 5) HANG 1/5
+6) OK
+7) HANG 1/20
+
+Kernel 3.18.9-031809-generic
+
+6) OK
+7) HANG 1/100
+
+
 
 
 # Patch Details
@@ -92,47 +105,4 @@ v3.14-rc6
 v3.14-rc7
 v3.14-rc8
 v3.15
-v3.15-rc1
-v3.15-rc2
-v3.15-rc3
-v3.15-rc4
-v3.15-rc5
-v3.15-rc6
-v3.15-rc7
-v3.15-rc8
-v3.16
-v3.16-rc1
-v3.16-rc2
-v3.16-rc3
-v3.16-rc4
-v3.16-rc5
-v3.16-rc6
-v3.16-rc7
-v3.17
-v3.17-rc1
-v3.17-rc2
-v3.17-rc3
-v3.17-rc4
-v3.17-rc5
-v3.17-rc6
-v3.17-rc7
-v3.18
-v3.18-rc1
-v3.18-rc2
-v3.18-rc3
-v3.18-rc4
-v3.18-rc5
-v3.18-rc6
-v3.18-rc7
-v3.19
-v3.19-rc1
-v3.19-rc2
-v3.19-rc3
-v3.19-rc4
-v3.19-rc5
-v3.19-rc6
-v3.19-rc7
-v4.0-rc1
-v4.0-rc2
-v4.0-rc3
-v4.0-rc4
+....
