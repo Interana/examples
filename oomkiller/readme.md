@@ -83,6 +83,41 @@ Kernel 3.18.9-031809-generic
 7) HANG 1/100
 
 
+Kernel 3.18.9-031809-generic - with oom flag
+6) OK
+7) OK
+
+
+
+# How to install new Kernel (3.18.9)
+
+mkdir ubuntu-3.18.9
+wget http://kernel.ubuntu.com/~kernel-ppa/mainline/v3.18.9-vivid/linux-headers-3.18.9-031809-generic_3.18.9-031809.201503080036_amd64.deb
+wget http://kernel.ubuntu.com/~kernel-ppa/mainline/v3.18.9-vivid/linux-headers-3.18.9-031809_3.18.9-031809.201503080036_all.deb
+wget http://kernel.ubuntu.com/~kernel-ppa/mainline/v3.18.9-vivid/linux-image-3.18.9-031809-generic_3.18.9-031809.201503080036_amd64.deb
+sudo dpkg -i *.deb
+>>> Install Package Maintainers Version (Grub)
+sudo update-grub
+vim /boot/grub/menu.lst
+
+
+
+# How to OOM Flag
+
+1) Check flag
+sudo cat /proc/sys/vm/oom_kill_allocating_task
+
+2) Update
+echo 1 | sudo tee /proc/sys/vm/oom_kill_allocating_task
+
+3) Verify
+sudo cat /proc/sys/vm/oom_kill_allocating_task
+
+4) Permanize
+sudo vim /etc/sysctl.conf
+vm.oom_kill_allocating_task = 0
+
+
 
 
 # Patch Details
