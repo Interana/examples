@@ -37,8 +37,8 @@ python -u test/load_gen_grequest.py -p 5000 -l 5 -u http://127.0.0.1:9090/test/p
 
 ## Run using httperf
 sudo apt-get install httperf
-httperf --timeout=5 --client=0/1 --server=127.0.0.1 --port=9090 --uri=/test/perf/3/0.5 --rate=1000 --send-buffer=4096 --recv-buffer=16384 --num-conns=10000 --num-calls=1
+httperf --hog --timeout=5 --client=0/1 --server=127.0.0.1 --port=9090 --uri=/test/perf/3/0.5 --rate=1000 --send-buffer=4096 --recv-buffer=16384 --num-conns=10000 --num-calls=1
 
 
 ## Run http pipelining
-httperf --timeout=5 --client=0/1 --server=127.0.0.1 --port=9090 --uri=/test/perf/3/0.5 --rate=1000 --send-buffer=4096 --recv-buffer=16384 --num-conns=100000 --num-calls=10
+httperf --hog --timeout=5 --client=0/1 --server=127.0.0.1 --port=9090 --uri=/test/perf/3/0.5 --rate=1000 --send-buffer=4096 --recv-buffer=16384 --num-conns=100000 --num-calls=10
