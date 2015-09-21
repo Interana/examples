@@ -34,20 +34,22 @@ for i in $(seq 1 2); do for j in $(seq 1 50); do (./memoryeater 10 1 100 &)  ; d
 for i in $(seq 1 5); do for j in $(seq 1 2); do (./memoryeater 10 100 10 &)  ; done ; sleep 10; done
 
 
-5) Duration test
-for i in $(seq 1 100); do for j in $(seq 1 5); do (./memoryeater 10 100 10 &)  ; done ; sleep 10; done
+5) Heavy Preasure test, just hammer it with 100 threads * 5 process
+for i in $(seq 1 100); do for j in $(seq 1 5); do (./memoryeater 10 100 10 &)  ; done ; sleep 30; done
 
 
-6) Thread kill and stuff - Duration test.  Only 10 threads and 10 megs per alloc.
+6) Thread kill and stuff - Duration test.  Light Pressure and thread restarts
 
-for i in $(seq 1 100); do for j in $(seq 1 10); do (./memoryeater_and_kill 10 10 10 50 &)  ; done ; sleep 60; done
-
-
-7) Thread kill and stuff - Duration test.  Using 100 threads, saturate the memory bus.
-
-for i in $(seq 1 100); do for j in $(seq 1 2); do (./memoryeater_and_kill 10 100 10 50 &)  ; done ; sleep 60; done
+for i in $(seq 1 100); do for j in $(seq 1 10); do (./memoryeater_and_kill 10 10 10 50 &)  ; done ; sleep 30; done
 
 
+7) Thread kill and stuff - Duration test.  Using 100 threads, Heavy Pressure and threads restart
+
+for i in $(seq 1 100); do for j in $(seq 1 2); do (./memoryeater_and_kill 10 100 10 50 &)  ; done ; sleep 30; done
+
+8) Super heavy
+
+for i in $(seq 1 100); do for j in $(seq 1 10); do (./memoryeater_and_kill 10 100 10 50 &)  ; done ; sleep 30; done
 
 
 8) Other ideas
@@ -116,6 +118,27 @@ sudo cat /proc/sys/vm/oom_kill_allocating_task
 4) Permanize
 sudo vim /etc/sysctl.conf
 vm.oom_kill_allocating_task = 0
+
+
+Note: For the test above, this will kill the shell of your test.  To get around this you need
+to put in a ./sh script and run
+
+nohup memoryeater.sh &
+
+
+# Cgroups
+
+sudo apt-get install cgroup-bin
+sudo cgcreate -a ubuntu:ubuntu -t ubuntu:ubuntu -g memory:ubuntu
+memLimit = 5,000,000
+echo export /sys/fs/cgroup/memory/interana/memory.limit_in_bytes' % memLimit
+PID-
+echo PID > /sys/fs/cgroup/memory/interana/cgroup.procs
+
+NOTE: for newer kernels, you must turn on memory cgroup (due its overhead)
+
+ubuntu@ip-10-158-142-183:~$ sudo vim /etc/default/grub
+ubuntu@ip-10-158-142-183:~$ sudo update-grub
 
 
 
