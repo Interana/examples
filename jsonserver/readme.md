@@ -28,11 +28,11 @@ net.core.somaxconn=4096
 
 
 ## Run uwsgi
-uwsgi <name_of_ini>
+cd rest && uwsgi <name_of_ini>
 
 
 ## Run connection test. 
-python -u load_gen_grequest.py -p 5000 -l 5 -u http://127.0.0.1:9090/test/perf/3/0.5
+python -u test/load_gen_grequest.py -p 5000 -l 5 -u http://127.0.0.1:9090/test/perf/3/0.5
 
 
 ## Run using httperf
