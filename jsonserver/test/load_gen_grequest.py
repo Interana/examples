@@ -14,7 +14,6 @@ def grequest_handler(base_url, num_parallel, num_loop):
         rs = (grequests.get(u) for u in urls)
         res = grequests.map(rs)
         current_code_count = defaultdict(int)
-        current_elapsed = {}
         elapsed_list = []
         
         end_1 = time.time()

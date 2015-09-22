@@ -1,11 +1,9 @@
 import time
 import ujson
-import cPickle
 
-from flask import Flask
+from flask import Flask, request
 from flask import make_response
 import gevent
-import numpy
 
 app = Flask(__name__)
 
@@ -71,5 +69,30 @@ def test_perf_3(sleep):
     rsp.headers['Content-Type'] = "application/json"
     return rsp
 
+
+@app.route('/test/perf/4', methods=['POST'])
+def test_perf_4():
+    """
+    This is the performance test to append to a log file
+    curl -H "Content-Type: application/json" -H "table: event" -H "pipeline_id: 1" -X POST -d '{"aaa" : 1}' "http://127.0.0.1:9090/test/perf/4"
+    """
+    msg = request.json
+    table_name = request.headers.get('table') or request.headers.get('table_name')
+    pipeline_id = request.headers.get('pipeline_id')
+    tailer_source_file = request.headers.get('tailer_source_file')
+
+    len_msg = len(ujson.dumps(msg)) if msg is not None else 0
+    print "Passed in table={} pipeline_id={} tailer_source={} msg_len={}".format(table_name, pipeline_id,
+                                                                             tailer_source_file, len_msg)
+
+    response = {
+        "message": "Recieved message of size {}".format(len_msg)
+    }
+    data = ujson.dumps(response)
+    rsp = make_response(data, 200)
+    rsp.headers['Content-Type'] = "application/json"
+    return rsp
+
+
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=9090)
+    app.run(host='127.0.0.1', port=9090, debug=True)
