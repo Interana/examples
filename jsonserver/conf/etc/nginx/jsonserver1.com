@@ -1,7 +1,3 @@
-#############################
-# Json Server UWSGI proxy pass
-#############################
-
 server {
         listen       9090  deferred backlog=65535;
         server_name  localhost 127.0.0.1;
