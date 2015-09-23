@@ -8,7 +8,7 @@ import gevent
 import requests
 
 DEFAULT_HEADERS = {
-    'Content-type': "application/json",
+    'Content-type': "html/text",
     'Accept-Encoding': "gzip"
 }
 
@@ -49,7 +49,7 @@ def make_http_request(base_url, headers, data, timeout=5, max_retries=1):
                                      data=ujson.dumps(data),
                                      timeout=timeout)
         except Exception, e:
-            print "Encountered Error"
+            print "Encountered Error {}".format(e)
             retry_counter += 1
     return response
 

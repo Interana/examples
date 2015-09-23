@@ -1,10 +1,15 @@
+from gevent import monkey
+import gevent
+from gevent import monkey as curious_george
+# Monkey-patch.
+from gevent.pool import Pool
+curious_george.patch_all(thread=False, select=False)
 from collections import defaultdict
 import time
-import grequests
 import argparse
-from pprint import pprint
-import gevent
+#import grequests
 import requests
+
 
 DEFAULT_HEADERS = {
     'Content-type': "html/text",
@@ -37,14 +42,16 @@ def grequest_handler(base_url, num_parallel, num_loop):
 
     total_code_count = defaultdict(int)
     total_elapsed = {'max' : -1e9, 'min' : 1e9, 'sum' : 0, 'rps' : 0}
+    pool = Pool(len(urls))
     for loop in range(num_loop):
         start_1 = time.time()
 
         if False:
-            rs = (grequests.get(u) for u in urls)
-            results = grequests.map(rs)
+            # rs = (grequests.get(u) for u in urls)
+            # results = grequests.map(rs)
+            pass
         else:
-            greenlets = [gevent.spawn(make_http_get_request, url, DEFAULT_HEADERS, {}, timeout=5, max_retries=1) for url in urls]
+            greenlets = [pool.spawn(make_http_get_request, url, DEFAULT_HEADERS, {}, timeout=5, max_retries=1) for url in urls]
             gevent.joinall(greenlets)
             results = [g.value for g in greenlets]
 
@@ -101,7 +108,6 @@ T3:
     
     start_1 = time.time()
     result, total_elapsed = grequest_handler(args.url, args.parallel, args.loops)
-    #grequest_handler(args.url, args.parallel, args.loops)
     end_1 = time.time()
     duration = (end_1 - start_1)
 
@@ -111,7 +117,6 @@ T3:
     print "+++All Result {}, Error Rate {} %".format(result, 100.0 * total_errors/(total_cnt * 1.0))
     print "+++Total Time: ({}) url={} Parallel={} elapsed {}".format (
          duration, args.url, args.parallel, total_elapsed)
-    #print "+++Total Time: ({})".format (duration)
 
 
 if __name__ == "__main__":

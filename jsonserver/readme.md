@@ -83,3 +83,13 @@ python -u load_gen_grequest.py -p 5000 -l 5 -u http://127.0.0.1:9090/test/perf/3
 ## Run Tailer test using test driver (300 rps)
 python -u load_tailer_service.py -d 6 -b 2 -r 1000 -c 1000
 python -u load_tailer_service.py -d 6 -b 2 -r 1000 -c 10000
+
+
+
+
+# Known Issues
+
+
+1) All Performance should be done with your "laptop" plugged in in high power mode or else you will get signficantly degraded numbers
+
+2) 

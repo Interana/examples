@@ -159,7 +159,7 @@ def test_perf_4():
     tailer_source_file = request.headers.get('tailer_source_file')
     len_msg = len(msg_dump) if msg_dump is not None else 0
 
-    print len_msg
+    #print len_msg
     import_file = ImportFile.get_cache(table_name, pipeline_id)
     import_file.write(msg_dump)
 
