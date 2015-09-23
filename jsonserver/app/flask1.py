@@ -62,7 +62,7 @@ class ImportFile(object):
 
         #lock.acquire()
         self.fh.write(data + '\r\n')
-        self.fh.flush()
+        #self.fh.flush()
         #lock.release()
         self.last_touch = time.time()
         self.file_len = os.fstat(self.fh.fileno()).st_size
@@ -151,16 +151,15 @@ def test_perf_3(sleep):
 def test_perf_4():
     """
     This is the performance test to append to a log file
-    curl -H "Content-Type: application/json" -H "table: event" -H "pipeline_id: 1" -X POST -d '{"aaa" : 1}' "http://127.0.0.1:9090/test/perf/4"
+    curl -H "Content-Type: application/text" -H "table: event" -H "pipeline_id: 1" -X POST -d '{"aaa" : 1}' "http://127.0.0.1:9090/test/perf/4"
     """
-    msg = request.json
+    msg_dump = request.get_data()
     table_name = request.headers.get('table') or request.headers.get('table_name')
     pipeline_id = request.headers.get('pipeline_id')
     tailer_source_file = request.headers.get('tailer_source_file')
+    len_msg = len(msg_dump) if msg_dump is not None else 0
 
-    msg_dump = ujson.dumps(msg) if msg is not None else 0
-    len_msg = len(msg_dump) if msg is not None else 0
-
+    print len_msg
     import_file = ImportFile.get_cache(table_name, pipeline_id)
     import_file.write(msg_dump)
 
@@ -177,4 +176,4 @@ def test_perf_4():
 
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=9090, debug=True)
+    app.run(host='127.0.0.1', port=9090, debug=False)

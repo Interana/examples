@@ -3,6 +3,34 @@ import time
 import grequests
 import argparse
 from pprint import pprint
+import gevent
+import requests
+
+DEFAULT_HEADERS = {
+    'Content-type': "html/text",
+}
+
+def make_http_get_request(base_url, headers, params, timeout=5, max_retries=1):
+    """
+    A wrapper around BaseCaller. This is created so BaseCaller
+    can run successfully inside a greenlet.
+    :param payload:
+    :return: return the payload and response back
+    """
+
+    retry_counter = 0
+    response = None
+    while response is None and retry_counter < max_retries:
+        try:
+            response = requests.get(base_url,
+                                     headers=headers,
+                                     params=params,
+                                     timeout=timeout)
+        except Exception, e:
+            print "Encountered Error"
+            retry_counter += 1
+    return response
+
 
 def grequest_handler(base_url, num_parallel, num_loop):
     urls = [base_url for i in range(num_parallel)]
@@ -11,22 +39,28 @@ def grequest_handler(base_url, num_parallel, num_loop):
     total_elapsed = {'max' : -1e9, 'min' : 1e9, 'sum' : 0, 'rps' : 0}
     for loop in range(num_loop):
         start_1 = time.time()
-        rs = (grequests.get(u) for u in urls)
-        res = grequests.map(rs)
+
+        if False:
+            rs = (grequests.get(u) for u in urls)
+            results = grequests.map(rs)
+        else:
+            greenlets = [gevent.spawn(make_http_get_request, url, DEFAULT_HEADERS, {}, timeout=5, max_retries=1) for url in urls]
+            gevent.joinall(greenlets)
+            results = [g.value for g in greenlets]
+
         current_code_count = defaultdict(int)
         elapsed_list = []
-        
         end_1 = time.time()
         duration = end_1 - start_1
  
-        for r in res:
+        for r in results:
             if r is not None:
                 current_code_count[r.status_code] += 1
-                total_code_count[r.status_code] += 1 
-                elapsed_list.append(r.elapsed.total_seconds ())                
+                total_code_count[r.status_code] += 1
+                elapsed_list.append(r.elapsed.total_seconds ())
             else:
-                current_code_count[None] += 1           
-        current_elapsed = {'max': max(elapsed_list), 'min': min(elapsed_list), 'avg' : 1.0 * sum(elapsed_list)/len(elapsed_list), 
+                current_code_count[None] += 1
+        current_elapsed = {'max': max(elapsed_list), 'min': min(elapsed_list), 'avg' : 1.0 * sum(elapsed_list)/len(elapsed_list),
                            'sum' : sum(elapsed_list), 'rps': len(elapsed_list)/duration}
         print "* Loop {} Total Time({}), result {}, timing {}".format(loop, duration, dict(current_code_count.items()), current_elapsed)
         total_elapsed['max'] = max([total_elapsed['max'], current_elapsed['max']])
@@ -67,6 +101,7 @@ T3:
     
     start_1 = time.time()
     result, total_elapsed = grequest_handler(args.url, args.parallel, args.loops)
+    #grequest_handler(args.url, args.parallel, args.loops)
     end_1 = time.time()
     duration = (end_1 - start_1)
 
@@ -75,7 +110,8 @@ T3:
 
     print "+++All Result {}, Error Rate {} %".format(result, 100.0 * total_errors/(total_cnt * 1.0))
     print "+++Total Time: ({}) url={} Parallel={} elapsed {}".format (
-        duration, args.url, args.parallel, total_elapsed)
+         duration, args.url, args.parallel, total_elapsed)
+    #print "+++Total Time: ({})".format (duration)
 
 
 if __name__ == "__main__":

@@ -15,6 +15,23 @@ DEFAULT_HEADERS = {
 BASE_URL = 'http://127.0.0.1:9090/test/perf/4'
 
 
+def http_session():
+
+    host = '127.0.0.1'
+    maxsize = 50
+    block = False
+    max_retries = 3
+    base_url = BASE_URL
+
+    http_pool_adapter = requests.adapters.HTTPAdapter(maxsize, maxsize, max_retries, block)
+
+    session = requests.session()
+    session.mount(base_url, http_pool_adapter)
+    return session, base_url
+
+
+
+
 def make_http_request(base_url, headers, data, timeout=5, max_retries=1):
     """
     A wrapper around BaseCaller. This is created so BaseCaller
