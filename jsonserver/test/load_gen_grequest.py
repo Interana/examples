@@ -9,11 +9,28 @@ import time
 import argparse
 #import grequests
 import requests
+import requests.adapters
 
 
 DEFAULT_HEADERS = {
     'Content-type': "html/text",
 }
+
+
+
+def http_session(base_url, pool_size=1000):
+
+    block = False
+    max_retries = 0
+
+    http_pool_adapter = requests.adapters.HTTPAdapter(pool_size, pool_size, max_retries, block)
+
+    session = requests.session()
+    session.mount(base_url, http_pool_adapter)
+    return session
+
+g_rest_pool = None
+
 
 def make_http_get_request(base_url, headers, params, timeout=5, max_retries=1):
     """
@@ -25,14 +42,15 @@ def make_http_get_request(base_url, headers, params, timeout=5, max_retries=1):
 
     retry_counter = 0
     response = None
+    global g_rest_pool
     while response is None and retry_counter < max_retries:
         try:
-            response = requests.get(base_url,
+            response = g_rest_pool.get(base_url,
                                      headers=headers,
                                      params=params,
                                      timeout=timeout)
         except Exception, e:
-            print "Encountered Error"
+            print "Encountered Error {}".format(e)
             retry_counter += 1
     return response
 
@@ -43,6 +61,8 @@ def grequest_handler(base_url, num_parallel, num_loop):
     total_code_count = defaultdict(int)
     total_elapsed = {'max' : -1e9, 'min' : 1e9, 'sum' : 0, 'rps' : 0}
     pool = Pool(len(urls))
+    global g_rest_pool
+    g_rest_pool = http_session(base_url, num_parallel)
     for loop in range(num_loop):
         start_1 = time.time()
 
@@ -55,10 +75,11 @@ def grequest_handler(base_url, num_parallel, num_loop):
             gevent.joinall(greenlets)
             results = [g.value for g in greenlets]
 
-        current_code_count = defaultdict(int)
-        elapsed_list = []
         end_1 = time.time()
         duration = end_1 - start_1
+
+        current_code_count = defaultdict(int)
+        elapsed_list = []
  
         for r in results:
             if r is not None:

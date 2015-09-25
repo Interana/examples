@@ -1,50 +1,48 @@
+## Ultra Json Server
 
+A low latency event driven server utilizing nginx/uwsgi and python flask api
 
-## Dependencies
-
+## Dependencies and nginx install
+```
 sudo apt-get install nginx
 sudo apt-get install libev-dev
-sudo apt-get install libevent-devel
+sudo apt-get uninstall libevent-devel
+```
 
-## Install nginx and change user to "interana" assuming that all the settings from our build has been applied
+## Update the system config (note this will destroy your interana config)
+
+```
+cd conf
+cp -r default/ /etc/default/
+cp -r nginx/ /etc/nginx/
+cp -r pam.d /etc/pam.d/
+cp -r security/ security/
+cp  sysctl.conf /etc/
+
+sudo sysctl -p
+```
+
+# TBD update the nginx site-avaialable and ad the internal ip
 
 
-
-
-## Chmod uswgi socket
-
-chown interana:jag /tmp/uwsgi
+# Add Socket file as below and give it world permissions (tbd do we need?)
+```
+chown interana:interana /tmp/uwsgi
 chmod 777 /tmp/uwsgi
+```
+
+## Run uwsgi server with a ini file for the config
+```
+cd rest && uwsgi flask1-laptop.ini
+```
 
 
 
-## Update the max files
-
-sudo vim /etc/security/limits.conf
-interana soft nofile 1000000
-interana hard nofile 1000000
-
-ulimit -aS
+## Alternatively install via debian
+sudo apt-get install httperf
 
 
-
-## Update somaxconn
-
-echo 4096 > /proc/sys/net/core/somaxconn
-
-vim /etc/sysctl.conf
-net.core.somaxconn=4096
-
-
-
-## Run uwsgi
-cd rest && uwsgi <name_of_ini>
-
-
-## Run connection test. 
-python -u test/load_gen_grequest.py -p 5000 -l 5 -u http://127.0.0.1:9090/test/perf/3/0.5
-
-## Build httperf
+## Build httperf (TBD, doesnt work well just skip)
 ```
 sudo apt-get install build-essential autoconf automake bison flex libtool intltool
 
@@ -59,32 +57,31 @@ mkdir -p httperf/build && cd httperf/build
 make
 ```
 
-## TBD
-## httperf
-sudo apt-get install httperf
+## Refer to this confluence page to record results for T0, T1 and T2 using the config file
+For the python test there are many test cases fired off, so you need to sum from log file all the RPSs together
+grep +++ load_gen_out.log
 
-## Test Nginx\System using httperf at 100K connections per second (100K rps)
-./src/httperf --hog --timeout=1 --client=0/1 --server=127.0.0.1 --port=80 --uri=/ --rate=1000 --send-buffer=4096 --recv-buffer=16384 --num-conns=10000 --num-calls=100
+## Test Nginx\System 100K rps (T0)
+httperf --hog --timeout=1 --client=0/1 --server=127.0.0.1 --port=80 --uri=/ --rate=1000 --send-buffer=4096 --recv-buffer=16384 --num-conns=10000 --num-calls=100
 pkill -9 -f httperf
 
-## Run Connection Test using httperf (1K rps)
-/src/httperf --hog --timeout=5 --client=0/1 --server=127.0.0.1 --port=9090 --uri=/test/perf/3/0.5 --rate=1000 --send-buffer=4096 --recv-buffer=16384 --num-conns=10000 --num-calls=1
-pkill -9 -f httperf
-
-
-## Run ConnctionTest + persistent connections (2K rps)
-./src/httperf --hog --timeout=5 --client=0/1 --server=127.0.0.1 --port=9090 --uri=/test/perf/3/0.5 --rate=1000 --send-buffer=4096 --recv-buffer=16384 --num-conns=1000 --num-calls=10
+## Run Connection Test using httperf 1K rps 
+httperf --hog --timeout=5 --client=0/1 --server=127.0.0.1 --port=9090 --uri=/test/perf/3/0.5 --rate=1000 --send-buffer=4096 --recv-buffer=16384 --num-conns=10000 --num-calls=1
 pkill -9 -f httperf
 
 
-## Run ConnectionTest using test driver (800 rps)
-python -u load_gen_grequest.py -p 5000 -l 5 -u http://127.0.0.1:9090/test/perf/3/0.5
-
-## Run Tailer test using test driver (300 rps)
-python -u load_tailer_service.py -d 6 -b 2 -r 1000 -c 1000
-python -u load_tailer_service.py -d 6 -b 2 -r 1000 -c 10000
+## Run ConnctionTest using httperf 2K persistent rps
+httperf --hog --timeout=5 --client=0/1 --server=127.0.0.1 --port=9090 --uri=/test/perf/3/0.5 --rate=1000 --send-buffer=4096 --recv-buffer=16384 --num-conns=1000 --num-calls=10
+pkill -9 -f httperf
 
 
+## Run Max rps  (T1)
+./load_gen_request.sh 10
+
+
+
+## Run Tailer write to file test (T2)
+./load_tailer_service.sh 5
 
 
 # Known Issues
@@ -92,4 +89,6 @@ python -u load_tailer_service.py -d 6 -b 2 -r 1000 -c 10000
 
 1) All Performance should be done with your "laptop" plugged in in high power mode or else you will get signficantly degraded numbers
 
-2) 
+2) HTTP Perf will shows errors on FD-Unavailable : that is a bug with httperf that can be ignored
+
+3) 

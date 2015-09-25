@@ -5,31 +5,29 @@ import time
 import ujson
 
 import gevent
+from gevent.pool import Pool
 import requests
 
 DEFAULT_HEADERS = {
     'Content-type': "html/text",
-    'Accept-Encoding': "gzip"
+    # 'Accept-Encoding': "gzip"
 }
 
 BASE_URL = 'http://127.0.0.1:9090/test/perf/4'
 
 
-def http_session():
-
-    host = '127.0.0.1'
-    maxsize = 50
+def http_session(base_url, pool_size=1000):
     block = False
-    max_retries = 3
-    base_url = BASE_URL
+    max_retries = 0
 
-    http_pool_adapter = requests.adapters.HTTPAdapter(maxsize, maxsize, max_retries, block)
+    http_pool_adapter = requests.adapters.HTTPAdapter(pool_size, pool_size, max_retries, block)
 
     session = requests.session()
     session.mount(base_url, http_pool_adapter)
-    return session, base_url
+    return session
 
 
+g_rest_pool = None
 
 
 def make_http_request(base_url, headers, data, timeout=5, max_retries=1):
@@ -42,12 +40,13 @@ def make_http_request(base_url, headers, data, timeout=5, max_retries=1):
 
     retry_counter = 0
     response = None
+    global g_rest_pool
     while response is None and retry_counter < max_retries:
         try:
-            response = requests.post(base_url,
-                                     headers=headers,
-                                     data=ujson.dumps(data),
-                                     timeout=timeout)
+            response = g_rest_pool.post(base_url,
+                                        headers=headers,
+                                        data=ujson.dumps(data),
+                                        timeout=timeout)
         except Exception, e:
             print "Encountered Error {}".format(e)
             retry_counter += 1
@@ -89,20 +88,25 @@ def request_generator(duration=1.0, rate_sec=100, burst_sec=1.0, num_columns=100
     total_code_count = defaultdict(int)
     total_elapsed = {'max': -1e9, 'min': 1e9, 'sum': 0, 'rps': 0}
 
+    pool = Pool(burst_size)
+    global g_rest_pool
+    g_rest_pool = http_session(BASE_URL, burst_size)
+
     for loop in range(total_loops):
-        start_1 = time.time()
         greenlets = []
         for burst_id in range(burst_size):
             basic_data_list[burst_id]['_id'] = burst_id
             greenlets += [
-                gevent.spawn(make_http_request, BASE_URL, headers, basic_data_list[burst_id], timeout=5, max_retries=1)]
+                pool.spawn(make_http_request, BASE_URL, headers, basic_data_list[burst_id], timeout=5, max_retries=1)]
+        start_1 = time.time()
         gevent.joinall(greenlets)
         results = [g.value for g in greenlets]
+        end_1 = time.time()
+        duration = end_1 - start_1
+
         current_code_count = defaultdict(int)
         elapsed_list = []
 
-        end_1 = time.time()
-        duration = end_1 - start_1
         for r in results:
             if r is not None:
                 current_code_count[r.status_code] += 1
@@ -148,8 +152,6 @@ def main():
 
     parser.add_argument('-c', '--columns', help='The number of columns',
                         default=100, type=int)
-
-
 
     args = parser.parse_args()
 
