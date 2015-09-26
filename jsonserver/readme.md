@@ -61,12 +61,12 @@ make
 For the python test there are many test cases fired off, so you need to sum from log file all the RPSs together
 grep +++ load_gen_out.log
 
-## Test Nginx\System 100K rps (T0)
+## Test Connection Test using Nginx\System 100K rps (T0)
 httperf --hog --timeout=1 --client=0/1 --server=127.0.0.1 --port=80 --uri=/ --rate=1000 --send-buffer=4096 --recv-buffer=16384 --num-conns=10000 --num-calls=100
 pkill -9 -f httperf
 
 ## Run Connection Test using httperf 1K rps 
-httperf --hog --timeout=5 --client=0/1 --server=127.0.0.1 --port=9090 --uri=/test/perf/3/0.5 --rate=1000 --send-buffer=4096 --recv-buffer=16384 --num-conns=10000 --num-calls=1
+httperf --hog --timeout=5 --client=0/1 --server=127.0.0.1 --port=9090 --uri=/test/perf/1 --rate=1000 --send-buffer=4096 --recv-buffer=16384 --num-conns=10000 --num-calls=100
 pkill -9 -f httperf
 
 

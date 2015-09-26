@@ -1,58 +1,19 @@
-from gevent import monkey
 import gevent
 from gevent import monkey as curious_george
-# Monkey-patch.
 from gevent.pool import Pool
 curious_george.patch_all(thread=False, select=False)
 from collections import defaultdict
 import time
 import argparse
-#import grequests
-import requests
-import requests.adapters
+from httpcommon import http_session
+from httpcommon import make_http_get_request
+
 
 
 DEFAULT_HEADERS = {
     'Content-type': "html/text",
+    # 'Accept-Encoding': "gzip"
 }
-
-
-
-def http_session(base_url, pool_size=1000):
-
-    block = False
-    max_retries = 0
-
-    http_pool_adapter = requests.adapters.HTTPAdapter(pool_size, pool_size, max_retries, block)
-
-    session = requests.session()
-    session.mount(base_url, http_pool_adapter)
-    return session
-
-g_rest_pool = None
-
-
-def make_http_get_request(base_url, headers, params, timeout=5, max_retries=1):
-    """
-    A wrapper around BaseCaller. This is created so BaseCaller
-    can run successfully inside a greenlet.
-    :param payload:
-    :return: return the payload and response back
-    """
-
-    retry_counter = 0
-    response = None
-    global g_rest_pool
-    while response is None and retry_counter < max_retries:
-        try:
-            response = g_rest_pool.get(base_url,
-                                     headers=headers,
-                                     params=params,
-                                     timeout=timeout)
-        except Exception, e:
-            print "Encountered Error {}".format(e)
-            retry_counter += 1
-    return response
 
 
 def grequest_handler(base_url, num_parallel, num_loop):
@@ -61,9 +22,9 @@ def grequest_handler(base_url, num_parallel, num_loop):
     total_code_count = defaultdict(int)
     total_elapsed = {'max' : -1e9, 'min' : 1e9, 'sum' : 0, 'rps' : 0}
     pool = Pool(len(urls))
-    global g_rest_pool
-    g_rest_pool = http_session(base_url, num_parallel)
-    for loop in range(num_loop):
+    import httpcommon
+    httpcommon.g_rest_pool = http_session(base_url, num_parallel)
+    for loop in xrange(num_loop):
         start_1 = time.time()
 
         if False:
