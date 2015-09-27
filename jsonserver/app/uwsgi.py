@@ -83,7 +83,7 @@ def test_perf_4(environ, start_response):
 
     headers = get_all_headers(environ)
     table_name = headers.get('table') or headers.get('table_name')
-    pipeline_id = headers.get('pipeline_id')
+    pipeline_id = headers.get('pipelineid')
     tailer_source_file = headers.get('tailer_source_file')
 
     msg_dump = None

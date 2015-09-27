@@ -48,7 +48,7 @@ def request_generator(duration=1.0, rate_sec=100, burst_sec=1.0, num_columns=100
     total_size = len(ujson.dumps(basic_data))
 
     headers = {'table': 'event',
-               'pipeline_id': '1'}
+               'pipelineid': '1'}
 
     headers = dict(headers.items() + DEFAULT_HEADERS.items())
 
@@ -57,10 +57,10 @@ def request_generator(duration=1.0, rate_sec=100, burst_sec=1.0, num_columns=100
     total_code_count = defaultdict(int)
     total_elapsed = {'max': -1e9, 'min': 1e9, 'sum': 0, 'rps': 0}
 
-    pool = Pool(burst_size)
+    pool = Pool(burst_size + burst_size)
     import httpcommon
 
-    httpcommon.g_rest_pool = http_session(BASE_URL, burst_size)
+    httpcommon.g_rest_pool = http_session(BASE_URL, burst_size + burst_size)
 
     for loop in range(total_loops):
         greenlets = []
@@ -87,6 +87,7 @@ def request_generator(duration=1.0, rate_sec=100, burst_sec=1.0, num_columns=100
         current_elapsed = {'max': max(elapsed_list), 'min': min(elapsed_list),
                            'avg': 1.0 * sum(elapsed_list) / len(elapsed_list),
                            'sum': sum(elapsed_list), 'rps': len(elapsed_list) / duration}
+
         print "* Loop {} Total Time({}), result {}, timing {}".format(loop, duration, dict(current_code_count.items()),
                                                                       current_elapsed)
         total_elapsed['max'] = max([total_elapsed['max'], current_elapsed['max']])

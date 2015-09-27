@@ -70,6 +70,7 @@ class ImportFile(object):
             print "Opening {} {}".format(datetime.now(), self.fh)
 
         self.fh.write(data + '\r\n')
+        # TBD, this may not really flush to disk anyways
         #self.fh.flush()
         self.last_touch = datetime.now()
         self.file_len = os.fstat(self.fh.fileno()).st_size
@@ -83,9 +84,8 @@ class ImportFile(object):
         closes a file handle
         """
         if self.fh:
-            #self.fh.flush()
-            #os.fsync(self.fh)
-            #self.fh.fsync()
+            self.fh.flush()
+            os.fsync(self.fh)
             self.fh.close()
             self.fh = None
 

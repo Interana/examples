@@ -65,7 +65,7 @@ grep +++ load_gen_out.log
 httperf --hog --timeout=1 --client=0/1 --server=127.0.0.1 --port=80 --uri=/ --rate=1000 --send-buffer=4096 --recv-buffer=16384 --num-conns=10000 --num-calls=100
 pkill -9 -f httperf
 
-## Run Connection Test using httperf 1K rps 
+## Run Connection Test using httperf 1K rps (T1)
 httperf --hog --timeout=5 --client=0/1 --server=127.0.0.1 --port=9090 --uri=/test/perf/1 --rate=1000 --send-buffer=4096 --recv-buffer=16384 --num-conns=10000 --num-calls=100
 pkill -9 -f httperf
 
@@ -75,7 +75,7 @@ httperf --hog --timeout=5 --client=0/1 --server=127.0.0.1 --port=9090 --uri=/tes
 pkill -9 -f httperf
 
 
-## Run Max rps  (T1)
+## Run Max rps
 ./load_gen_request.sh 10
 
 

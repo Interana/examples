@@ -74,12 +74,12 @@ def test_perf_3(sleep):
 def test_perf_4():
     """
     This is the performance test to append to a log file
-    curl -H "Content-Type: application/text" -H "table: event" -H "pipeline_id: 1" -X POST -d '{"aaa" : 1}' "http://127.0.0.1:9090/test/perf/4"
+    curl -H "Content-Type: application/text" -H "table: event" -H "pipeline.id: 1" -X POST -d '{"aaa" : 1}' "http://127.0.0.1:9090/test/perf/4"
     Assumptions : The data is decoded and is a json string (list not supported yet)
     """
     msg_dump = request.get_data()
     table_name = request.headers.get('table') or request.headers.get('table_name')
-    pipeline_id = request.headers.get('pipeline_id')
+    pipeline_id = request.headers.get('pipelineid')
     tailer_source_file = request.headers.get('tailer_source_file')
     len_msg = len(msg_dump) if msg_dump is not None else 0
 
