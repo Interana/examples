@@ -1,23 +1,6 @@
 import re
 import ujson
 
-# def application(environ, start_response):
-#     status = '200 OK'
-#     """
-#     Sleep for specified time
-#     """
-#     sleep = 0.5
-#     sleep = float(sleep)
-#     gevent.sleep(sleep)
-#     response = {
-#         "message": "CPU Perf test_perf_3 waited for {} ms".format(1000 * sleep)
-#     }
-#     output = ujson.dumps(response)
-#     response_headers = [('Content-type', 'application/json'),
-#                         ('Content-Length', str(len(output)))]
-#
-#     start_response(status, response_headers)
-#     return [output]
 import gevent
 from common import ImportFile
 
@@ -97,17 +80,13 @@ def test_perf_4(environ, start_response):
     import_file = ImportFile.get_cache(table_name, pipeline_id)
     import_file.write(msg_dump)
 
-    response = {
-        "message": "Recieved message of size {} bytes".format(len_msg)
-    }
-    data = ujson.dumps(response)
     response_headers = [
        ('Content-type', 'application/json'),
-       ('Content-Length', str(len(data)))
+       ('Content-Length', '0')
     ]
 
     start_response('200 OK', response_headers)
-    return data
+    return [None]
 
 
 ## Put routes down here to the message above.  When having parameter, always put all variants in there
