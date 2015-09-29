@@ -112,7 +112,7 @@ def main():
     sleep_time = 0.5
 
     parser.add_argument('-H', '--host_port', help='The host and port to do load test, i.e. http://127.0.0.1:9090',
-                        default='127.0.0.1:9090')
+                        default='http://127.0.0.1:9090')
 
 
     parser.add_argument('-a', '--action', help='Do a test run or check results',
