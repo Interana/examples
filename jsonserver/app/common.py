@@ -58,7 +58,6 @@ class ImportFile(object):
 
         if age > MAX_AGE:
             should_rotate = True
-
         return should_rotate
 
     def write(self, data):
@@ -84,8 +83,8 @@ class ImportFile(object):
         closes a file handle
         """
         if self.fh:
-            self.fh.flush()
-            os.fsync(self.fh)
+            #self.fh.flush()
+            #os.fsync(self.fh)
             self.fh.close()
             self.fh = None
 
