@@ -68,7 +68,7 @@ def request_generator(host_port, duration=1.0, rate_sec=100, burst_sec=1.0, num_
         for burst_id in range(burst_size):
             basic_data_list[burst_id]['_id'] = burst_id
             greenlets.append(
-                pool.spawn(make_http_post_request, base_url,  headers, basic_data_list[burst_id], timeout=5, max_retries=1))
+                pool.spawn(make_http_post_request, base_url,  headers, basic_data_list[burst_id], timeout=10, max_retries=1))
         start_1 = time.time()
         gevent.joinall(greenlets)
         results = [g.value for g in greenlets]
