@@ -68,7 +68,7 @@ def request_generator(host_port, duration=1.0, rate_sec=100, burst_sec=1.0, num_
         for burst_id in range(burst_size):
             basic_data_list[burst_id]['_id'] = burst_id
             greenlets.append(
-                pool.spawn(make_http_post_request, base_url,  headers, basic_data_list[burst_id], timeout=5, max_retries=1))
+                pool.spawn(make_http_post_request, base_url,  headers, basic_data_list[burst_id], timeout=10, max_retries=1))
         start_1 = time.time()
         gevent.joinall(greenlets)
         results = [g.value for g in greenlets]
@@ -112,7 +112,7 @@ def main():
     sleep_time = 0.5
 
     parser.add_argument('-H', '--host_port', help='The host and port to do load test, i.e. http://127.0.0.1:9090',
-                        default='127.0.0.1:9090')
+                        default='http://127.0.0.1:9090')
 
 
     parser.add_argument('-a', '--action', help='Do a test run or check results',
