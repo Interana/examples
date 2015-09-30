@@ -2,4 +2,4 @@
 #  http://wiki.nginx.org/CoreModule#worker_rlimit_nofile
 # Set the ulimit variable if you need defaults to change.
 #  Example: ULIMIT="-n 4096"
-ULIMIT="-n 100000"
+ULIMIT="-n 1000000"
