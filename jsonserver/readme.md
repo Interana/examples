@@ -68,10 +68,11 @@ make
 For the python test there are many test cases fired off, so you need to sum from log file all the RPSs together
 grep +++ load_gen_out.log
 
-## Various Monitors
-htop
+## Various Monitors.  NOTE: these tools may reduce performance by 6% per tool for T0 and T1 tests.  So for full throughput test
+turns these reports off.
+htop -d 20
 sudo iostat -dmx 5
-watch -n 1 -d "sudo netstat -antpu | awk '{print \$6}' | sort | uniq -c"
+watch -n 5 -d "sudo netstat -antpu | awk '{print \$6}' | sort | uniq -c"
 sudo iftop -i eth0
 
 
