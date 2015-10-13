@@ -9,11 +9,10 @@ from datetime import datetime
 import time
 import ujson
 import urlparse
-
+import zlib
 
 DEFAULT_HEADERS = {
     'Content-type': "html/text",
-    # 'Accept-Encoding': "gzip"
 }
 
 BASE_PATH = '/test/perf/4'
@@ -22,7 +21,7 @@ from httpcommon import http_session
 from httpcommon import make_http_post_request
 
 
-def request_generator(host_port, duration=1.0, rate_sec=100, burst_sec=1.0, num_columns=100, parallize=True):
+def request_generator(host_port, duration=1.0, rate_sec=100, burst_sec=1.0, num_columns=100, parallize=True, compress=True):
     """
     This generates data and dispatches on a greenlet.  It uses a window to keep the rate constant
     :return:
@@ -46,14 +45,17 @@ def request_generator(host_port, duration=1.0, rate_sec=100, burst_sec=1.0, num_
 
     basic_data_list = [basic_data.copy() for x in xrange(burst_size)]
 
-    total_size = len(ujson.dumps(basic_data))
+    total_size = len(zlib.compress(ujson.dumps(basic_data))) if compress else len(ujson.dumps(basic_data))
 
     headers = {'table': 'event',
                'pipelineid': '1'}
 
+    if compress:
+        headers['Content-Encoding'] = 'gzip'
+
     headers = dict(headers.items() + DEFAULT_HEADERS.items())
 
-    print "Total size of post {}".format(total_size)
+    print "Total size of post {} compression {}".format(total_size, compress)
 
     total_code_count = defaultdict(int)
     total_elapsed = {'max': -1e9, 'min': 1e9, 'sum': 0, 'rps': 0}
@@ -67,8 +69,11 @@ def request_generator(host_port, duration=1.0, rate_sec=100, burst_sec=1.0, num_
         greenlets = []
         for burst_id in range(burst_size):
             basic_data_list[burst_id]['_id'] = burst_id
+            burst_data = ujson.dumps(basic_data_list[burst_id])
+            if compress:
+                burst_data = zlib.compress(burst_data)
             greenlets.append(
-                pool.spawn(make_http_post_request, base_url,  headers, basic_data_list[burst_id], timeout=10, max_retries=1))
+                pool.spawn(make_http_post_request, base_url,  headers, burst_data, timeout=10, max_retries=1))
         start_1 = time.time()
         gevent.joinall(greenlets)
         results = [g.value for g in greenlets]
@@ -130,11 +135,16 @@ def main():
     parser.add_argument('-c', '--columns', help='The number of columns',
                         default=100, type=int)
 
+    parser.add_argument('-z', '--zlib_compress', help='Compress data via zlib',
+                         action='store_true', default=False)
+
+
     args = parser.parse_args()
 
     if args.action == 'run':
         start_1 = time.time()
-        result, total_elapsed = request_generator(args.host_port, args.duration, args.rate, args.burst_duration, args.columns)
+        result, total_elapsed = request_generator(args.host_port, args.duration, args.rate, args.burst_duration, args.columns,
+                                                  compress=args.zlib_compress)
         end_1 = time.time()
         duration = (end_1 - start_1)
 

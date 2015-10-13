@@ -31,7 +31,7 @@ def make_http_post_request(base_url, headers, data, timeout=5, max_retries=1):
         try:
             response = g_rest_pool.post(base_url,
                                         headers=headers,
-                                        data=ujson.dumps(data),
+                                        data=data,
                                         timeout=timeout)
         except Exception, e:
             print "Encountered Error {}".format(e)
