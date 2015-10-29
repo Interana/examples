@@ -48,6 +48,9 @@ void * memeater(void *data_ptr)
 int main(int argc, char *argv[])
 {
 
+
+    setvbuf(stdout, NULL, _IONBF, 0);
+
     if (argc != 5)
     {
         printf("Found %d args  Must have 4 args Usage %s <CONSUME_MB> <THREADS> <LOOPS_PER_THREAD> <KILL_PERCENT>", argc-1, argv[0]);
